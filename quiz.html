@@ -3,75 +3,60 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QuizVibe — Playing</title>
+  <title>QuizVibe — Results</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--text:#f0eeff;--muted:#7b7a8e;--border:rgba(255,255,255,0.07);--topic-color:#c44dff}
+    :root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--text:#f0eeff;--muted:#7b7a8e;--border:rgba(255,255,255,0.07)}
     body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;cursor:none}
     .cursor{width:12px;height:12px;background:#fff;border-radius:50%;position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:transform 0.1s}
     .cursor-follower{width:36px;height:36px;border:1.5px solid rgba(255,255,255,0.3);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transition:all 0.12s ease;mix-blend-mode:difference}
     .bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:60px 60px;z-index:0}
     .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.1;animation:float 12s ease-in-out infinite;z-index:0;pointer-events:none}
-    .orb-1{width:400px;height:400px;background:var(--topic-color);top:-100px;left:-100px}
+    .orb-1{width:400px;height:400px;background:#c44dff;top:-100px;left:-100px}
     .orb-2{width:300px;height:300px;background:#4361ee;bottom:-100px;right:-100px;animation-delay:-4s}
     @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)}}
-    .container{max-width:720px;margin:0 auto;padding:2rem;position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
-    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;gap:1rem;flex-wrap:wrap}
-    .back-btn{background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:0.5rem 1rem;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:none;transition:all 0.2s ease;text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem}
-    .back-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--text)}
-    .topbar-right{display:flex;align-items:center;gap:0.75rem}
-    .topic-tag{background:var(--bg2);border:1px solid var(--border);padding:0.4rem 0.9rem;border-radius:100px;font-size:0.8rem;color:var(--muted)}
-    .score-badge{background:var(--bg2);border:1px solid var(--topic-color);padding:0.4rem 1rem;border-radius:100px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:var(--topic-color)}
-    .diff-badge{padding:0.25rem 0.7rem;border-radius:100px;font-size:0.7rem;font-weight:600;font-family:'Syne',sans-serif}
-    .progress-wrap{margin-bottom:1.5rem}
-    .progress-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem}
-    .q-fraction{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem}
-    .q-counter{font-size:0.8rem;color:var(--muted)}
-    .progress-bar-wrap{height:3px;background:var(--border);border-radius:100px;overflow:hidden}
-    .progress-bar-fill{height:100%;background:var(--topic-color);border-radius:100px;transition:width 0.5s ease}
-    .timer-section{display:flex;align-items:center;gap:1.2rem;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1rem 1.5rem;margin-bottom:1.5rem;transition:border-color 0.3s ease}
-    .timer-section.warning{border-color:#FBBF24}
-    .timer-section.danger{border-color:#EF4444;animation:pulse-border 0.5s ease infinite}
-    @keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.2)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
-    .timer-ring-wrap{position:relative;width:56px;height:56px;flex-shrink:0}
-    .timer-ring-wrap svg{transform:rotate(-90deg)}
-    .timer-ring-bg{stroke:var(--border)}
-    .timer-ring-fill{stroke:var(--topic-color);stroke-dasharray:157;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke 0.3s ease;stroke-linecap:round}
-    .timer-number{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;transition:color 0.3s ease}
-    .timer-info{flex:1}
-    .timer-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:0.2rem}
-    .timer-status{font-size:0.9rem;font-weight:500}
-    .question-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:1.5rem;animation:slideIn 0.4s cubic-bezier(0.34,1.56,0.64,1)}
-    @keyframes slideIn{from{opacity:0;transform:translateY(12px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-    .q-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:1rem}
-    .question-text{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;line-height:1.4;letter-spacing:-0.3px}
-    .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;margin-bottom:1rem}
-    .option-btn{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1rem 1.2rem;text-align:left;cursor:none;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;gap:0.75rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);position:relative;overflow:hidden;animation:fadeUp 0.3s ease both}
-    .option-btn:nth-child(1){animation-delay:0.05s}.option-btn:nth-child(2){animation-delay:0.1s}.option-btn:nth-child(3){animation-delay:0.15s}.option-btn:nth-child(4){animation-delay:0.2s}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .option-btn:hover:not(:disabled){transform:translateY(-3px) scale(1.02);border-color:var(--topic-color);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
-    .option-btn:disabled{cursor:not-allowed}
-    .option-letter{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;flex-shrink:0;transition:all 0.25s ease}
-    .option-btn.correct{border-color:#34D399;background:rgba(52,211,153,0.08);animation:correctPop 0.4s cubic-bezier(0.34,1.56,0.64,1)}
-    .option-btn.correct .option-letter{background:#34D399;border-color:#34D399;color:#000}
-    .option-btn.wrong{border-color:#EF4444;background:rgba(239,68,68,0.08);animation:wrongShake 0.4s ease}
-    .option-btn.wrong .option-letter{background:#EF4444;border-color:#EF4444;color:#fff}
-    .option-btn.reveal{border-color:rgba(52,211,153,0.4);background:rgba(52,211,153,0.04)}
-    .option-btn.reveal .option-letter{background:rgba(52,211,153,0.2);border-color:#34D399;color:#34D399}
-    @keyframes correctPop{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-    @keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-    .feedback-bar{padding:0.9rem 1.2rem;border-radius:12px;font-weight:500;font-size:0.9rem;margin-bottom:1rem;opacity:0;transform:translateY(4px);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
-    .feedback-bar.show{opacity:1;transform:translateY(0)}
-    .feedback-bar.correct-fb{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399}
-    .feedback-bar.wrong-fb{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#EF4444}
-    .feedback-bar.timeout-fb{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:#FBBF24}
-    .next-btn{width:100%;padding:1rem;border:none;border-radius:14px;background:var(--topic-color);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:none;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);letter-spacing:-0.3px;opacity:0;transform:translateY(6px);pointer-events:none}
-    .next-btn.show{opacity:1;transform:translateY(0);pointer-events:all}
-    .next-btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+    #confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:2}
+    .container{max-width:680px;margin:0 auto;padding:2rem;position:relative;z-index:3}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+    .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;background:linear-gradient(135deg,#fff,#c44dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .back-link{color:var(--muted);font-size:0.85rem;text-decoration:none;transition:color 0.2s ease;cursor:none}
+    .back-link:hover{color:var(--text)}
+    .score-hero{background:var(--bg2);border:1px solid var(--border);border-radius:24px;padding:2.5rem 2rem;text-align:center;margin-bottom:1.5rem;animation:fadeUp 0.6s ease both;position:relative;overflow:hidden}
+    .result-emoji{font-size:3.5rem;display:block;margin-bottom:1rem;animation:bounce 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.3s both}
+    @keyframes bounce{from{opacity:0;transform:scale(0) rotate(-20deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+    .result-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;letter-spacing:-1px;margin-bottom:0.5rem;animation:fadeUp 0.6s ease 0.4s both}
+    .result-msg{color:var(--muted);font-size:0.95rem;max-width:380px;margin:0 auto 2rem;line-height:1.6;animation:fadeUp 0.6s ease 0.5s both}
+    .score-ring-wrap{display:flex;justify-content:center;margin-bottom:2rem;animation:fadeUp 0.6s ease 0.6s both}
+    .score-ring{position:relative;width:130px;height:130px}
+    .score-ring svg{transform:rotate(-90deg)}
+    .score-ring circle{fill:none;stroke-width:5;stroke-linecap:round}
+    .ring-bg-r{stroke:var(--border)}
+    .ring-fg-r{stroke-dasharray:345;stroke-dashoffset:345;transition:stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1) 0.8s}
+    .score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .score-pts{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-1px;line-height:1}
+    .score-sub{color:var(--muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;margin-top:0.2rem}
+    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;animation:fadeUp 0.6s ease 0.7s both}
+    .stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1rem;text-align:center;transition:all 0.3s ease}
+    .stat-box:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.15)}
+    .stat-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;letter-spacing:-1px;display:block;margin-bottom:0.2rem}
+    .stat-lbl{color:var(--muted);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px}
+    .section-title{font-family:'Syne',sans-serif;font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin:1.5rem 0 1rem;font-weight:600;animation:fadeUp 0.6s ease 0.8s both}
+    .recs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.9rem;margin-bottom:1.5rem}
+    .rec-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.2rem;text-decoration:none;color:var(--text);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);cursor:none;display:block;animation:fadeUp 0.6s ease both}
+    .rec-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,0.3)}
+    .rec-emoji{font-size:1.8rem;display:block;margin-bottom:0.5rem}
+    .rec-name{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.2rem}
+    .rec-desc{color:var(--muted);font-size:0.75rem}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;margin-bottom:3rem;animation:fadeUp 0.6s ease 1s both}
+    .btn-primary{padding:1rem;border:none;border-radius:14px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;cursor:none;transition:all 0.3s ease;text-align:center;display:flex;align-items:center;justify-content:center}
+    .btn-primary:hover{transform:translateY(-2px);filter:brightness(1.1)}
+    .btn-secondary{padding:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:'Syne',sans-serif;font-weight:600;font-size:0.95rem;cursor:none;transition:all 0.3s ease;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center}
+    .btn-secondary:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-2px)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     @media(hover:none){body{cursor:auto}.cursor,.cursor-follower{display:none}}
-    @media(max-width:768px){.container{padding:1rem}.topbar{gap:0.5rem;margin-bottom:1.2rem}.back-btn{font-size:0.8rem;padding:0.4rem 0.8rem}.score-badge,.topic-tag{font-size:0.75rem;padding:0.35rem 0.7rem}.timer-section{padding:0.8rem 1rem;margin-bottom:1.2rem}.timer-ring-wrap{width:46px;height:46px}.timer-number{font-size:0.9rem}.question-card{padding:1.2rem;margin-bottom:1rem}.question-text{font-size:1rem}.options-grid{grid-template-columns:1fr;gap:0.6rem}.option-btn{padding:0.85rem 1rem}}
-    @media(max-width:480px){.question-text{font-size:0.95rem}.option-letter{width:26px;height:26px;font-size:0.72rem}}
+    @media(max-width:768px){.container{padding:1rem;max-width:100%}.score-hero{padding:1.8rem 1.2rem;border-radius:20px}.result-emoji{font-size:2.8rem}.score-ring{width:110px;height:110px}.score-pts{font-size:1.7rem}.recs-grid{grid-template-columns:1fr 1fr;gap:0.7rem}.actions{grid-template-columns:1fr;gap:0.7rem}.stat-val{font-size:1.5rem}}
+    @media(max-width:480px){.recs-grid{grid-template-columns:1fr 1fr}.score-hero{padding:1.4rem 1rem}}
   </style>
 </head>
 <body>
@@ -80,42 +65,40 @@
 <div class="bg-grid"></div>
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
+<canvas id="confettiCanvas"></canvas>
 <div class="container">
   <div class="topbar">
-    <a href="index.html" class="back-btn">← Topics</a>
-    <div class="topbar-right">
-      <span class="topic-tag" id="topicTag">Loading...</span>
-      <span class="diff-badge" id="diffBadge"></span>
-      <span class="score-badge" id="scoreBadge">0 pts</span>
+    <div class="logo">QuizVibe✦</div>
+    <a href="index.html" class="back-link">← All topics</a>
+  </div>
+  <div class="score-hero" id="scoreHero">
+    <span class="result-emoji" id="resultEmoji">🎉</span>
+    <div class="result-title" id="resultTitle">Amazing!</div>
+    <div class="result-msg" id="resultMsg">You crushed it!</div>
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle class="ring-bg-r" cx="65" cy="65" r="55"/>
+          <circle class="ring-fg-r" id="ringFg" cx="65" cy="65" r="55"/>
+        </svg>
+        <div class="score-inner">
+          <span class="score-pts" id="scorePts">0</span>
+          <span class="score-sub">points</span>
+        </div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box"><span class="stat-val" id="statCorrect">0</span><span class="stat-lbl">Correct</span></div>
+      <div class="stat-box"><span class="stat-val" id="statWrong">0</span><span class="stat-lbl">Wrong</span></div>
+      <div class="stat-box"><span class="stat-val" id="statPct">0%</span><span class="stat-lbl">Accuracy</span></div>
     </div>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-info">
-      <span class="q-fraction">Q <span id="qNum">1</span>/15</span>
-      <span class="q-counter" id="correctCount">0 correct</span>
-    </div>
-    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="section-title">Try these next</div>
+  <div class="recs-grid" id="recsGrid"></div>
+  <div class="actions">
+    <button class="btn-primary" id="retryBtn" onclick="retry()">↺ Play Again</button>
+    <a href="index.html" class="btn-secondary">← All Topics</a>
   </div>
-  <div class="timer-section" id="timerSection">
-    <div class="timer-ring-wrap">
-      <svg width="56" height="56" viewBox="0 0 56 56">
-        <circle class="timer-ring-bg" cx="28" cy="28" r="25" fill="none" stroke-width="3"/>
-        <circle class="timer-ring-fill" id="timerRing" cx="28" cy="28" r="25" fill="none" stroke-width="3"/>
-      </svg>
-      <div class="timer-number" id="timerNum">30</div>
-    </div>
-    <div class="timer-info">
-      <div class="timer-label">Time remaining</div>
-      <div class="timer-status" id="timerStatus">Take your time...</div>
-    </div>
-  </div>
-  <div class="question-card" id="questionCard">
-    <div class="q-label" id="qLabel">Question 1</div>
-    <div class="question-text" id="questionText">Loading...</div>
-  </div>
-  <div class="options-grid" id="optionsGrid"></div>
-  <div class="feedback-bar" id="feedbackBar"></div>
-  <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
 </div>
 <script src="./data.js"></script>
 <script>
@@ -129,115 +112,87 @@
   const topicId=sessionStorage.getItem('selectedTopic')||'kpop';
   const difficulty=sessionStorage.getItem('difficulty')||'easy';
   const topic=quizData[topicId]||quizData['kpop'];
-  const questions=[...topic[difficulty]].sort(()=>Math.random()-0.5);
+  const score=parseInt(sessionStorage.getItem('finalScore'))||0;
+  const correct=parseInt(sessionStorage.getItem('correctCount'))||0;
+  const wrong=15-correct;
+  const pct=Math.round((correct/15)*100);
 
-  const diffLabels={easy:'🌱 Easy',medium:'🔥 Medium',hard:'💀 Hard'};
-  const diffColors={easy:'#34D399',medium:'#FBBF24',hard:'#EF4444'};
-  const letters=['A','B','C','D'];
+  const messages=[
+    {min:0,max:3,emoji:'😅',title:'Keep Practicing!',msg:"Don't worry — every expert was a beginner once. Try again!"},
+    {min:4,max:7,emoji:'🙂',title:'Not Bad!',msg:"You're getting there! A bit more practice and you'll nail it."},
+    {min:8,max:10,emoji:'😎',title:'Pretty Good!',msg:'Solid effort! You clearly know your stuff on this topic.'},
+    {min:11,max:12,emoji:'🔥',title:'On Fire!',msg:"Wow, you're really good at this! Almost a perfect score!"},
+    {min:13,max:15,emoji:'🏆',title:'Legendary!',msg:'Perfect or near-perfect! You are an absolute master of this topic!'}
+  ];
+  const result=messages.find(m=>correct>=m.min&&correct<=m.max)||messages[0];
 
-  document.documentElement.style.setProperty('--topic-color',topic.color);
-  document.getElementById('topicTag').textContent=topic.emoji+' '+topic.name;
-  const db=document.getElementById('diffBadge');
-  db.textContent=diffLabels[difficulty];
-  db.style.background=diffColors[difficulty]+'22';
-  db.style.color=diffColors[difficulty];
-  db.style.border='1px solid '+diffColors[difficulty]+'44';
-  document.title='QuizVibe — '+topic.name;
+  document.getElementById('resultEmoji').textContent=result.emoji;
+  document.getElementById('resultTitle').textContent=result.title;
+  document.getElementById('resultMsg').textContent=result.msg;
+  document.getElementById('statCorrect').textContent=correct;
+  document.getElementById('statWrong').textContent=wrong;
+  document.getElementById('statPct').textContent=pct+'%';
+  document.getElementById('statCorrect').style.color=topic.color;
+  document.getElementById('statPct').style.color=topic.color;
 
-  let current=0,score=0,correct=0,timeLeft=30,timerInterval=null;
-  const circumference=157;
+  const hero=document.getElementById('scoreHero');
+  hero.style.borderColor=topic.color+'33';
+  document.getElementById('ringFg').style.stroke=topic.color;
+  document.getElementById('retryBtn').style.background=topic.bg;
 
-  function loadQuestion(){
-    const q=questions[current];
-    const card=document.getElementById('questionCard');
-    card.style.animation='none';card.offsetHeight;card.style.animation='slideIn 0.4s cubic-bezier(0.34,1.56,0.64,1)';
-    document.getElementById('qLabel').textContent='Question '+(current+1);
-    document.getElementById('questionText').textContent=q.q;
-    document.getElementById('qNum').textContent=current+1;
-    document.getElementById('progressFill').style.width=(current/15*100)+'%';
-    const grid=document.getElementById('optionsGrid');
-    grid.innerHTML='';
-    q.options.forEach((opt,i)=>{
-      const btn=document.createElement('button');
-      btn.className='option-btn';
-      btn.innerHTML=`<span class="option-letter">${letters[i]}</span>${opt}`;
-      btn.onclick=()=>selectAnswer(i);
-      grid.appendChild(btn);
-    });
-    document.getElementById('feedbackBar').className='feedback-bar';
-    document.getElementById('nextBtn').className='next-btn';
-    startTimer();
-  }
+  setTimeout(()=>{
+    const offset=345*(1-pct/100);
+    document.getElementById('ringFg').style.strokeDashoffset=offset;
+  },100);
 
-  function startTimer(){
-    timeLeft=30;updateTimer();
-    timerInterval=setInterval(()=>{
-      timeLeft--;updateTimer();
-      if(timeLeft<=0){clearInterval(timerInterval);timeOut();}
-    },1000);
-  }
+  let displayed=0;
+  const counter=setInterval(()=>{
+    displayed=Math.min(displayed+Math.ceil(score/40),score);
+    document.getElementById('scorePts').textContent=displayed;
+    if(displayed>=score)clearInterval(counter);
+  },30);
 
-  function updateTimer(){
-    const pct=timeLeft/30;
-    document.getElementById('timerRing').style.strokeDashoffset=circumference*(1-pct);
-    document.getElementById('timerNum').textContent=timeLeft;
-    const sec=document.getElementById('timerSection');
-    const ring=document.getElementById('timerRing');
-    const num=document.getElementById('timerNum');
-    const status=document.getElementById('timerStatus');
-    if(timeLeft>15){ring.style.stroke=topic.color;sec.className='timer-section';status.textContent='Take your time...';num.style.color='var(--text)';}
-    else if(timeLeft>8){ring.style.stroke='#FBBF24';sec.className='timer-section warning';status.textContent='Getting close!';num.style.color='#FBBF24';}
-    else{ring.style.stroke='#EF4444';sec.className='timer-section danger';status.textContent='Hurry up!!';num.style.color='#EF4444';}
-  }
+  const others=Object.entries(quizData).filter(([k])=>k!==topicId).sort(()=>Math.random()-0.5).slice(0,4);
+  const recsGrid=document.getElementById('recsGrid');
+  others.forEach(([key,t],i)=>{
+    const card=document.createElement('a');
+    card.className='rec-card';
+    card.href='#';
+    card.style.animationDelay=(0.9+i*0.1)+'s';
+    card.innerHTML=`<span class="rec-emoji">${t.emoji}</span><div class="rec-name">${t.name}</div><div class="rec-desc">${t.description}</div>`;
+    card.addEventListener('mouseenter',()=>{card.style.borderColor=t.color+'44';});
+    card.addEventListener('mouseleave',()=>{card.style.borderColor='';});
+    card.onclick=e=>{e.preventDefault();sessionStorage.setItem('selectedTopic',key);window.location.href='quiz.html';};
+    recsGrid.appendChild(card);
+  });
 
-  function selectAnswer(chosen){
-    clearInterval(timerInterval);
-    const q=questions[current];
-    const btns=document.querySelectorAll('.option-btn');
-    btns.forEach(b=>b.disabled=true);
-    const fb=document.getElementById('feedbackBar');
-    if(chosen===q.answer){
-      btns[chosen].className='option-btn correct';
-      const pts=Math.max(10,Math.round(timeLeft*3.33));
-      score+=pts;correct++;
-      fb.textContent='✓ Correct! +'+pts+' points';
-      fb.className='feedback-bar correct-fb show';
-      document.getElementById('correctCount').textContent=correct+' correct';
-    } else {
-      btns[chosen].className='option-btn wrong';
-      btns[q.answer].className='option-btn reveal';
-      fb.textContent='✗ Wrong! Answer: '+q.options[q.answer];
-      fb.className='feedback-bar wrong-fb show';
+  function retry(){window.location.href='quiz.html';}
+
+  if(correct>=11){
+    const canvas=document.getElementById('confettiCanvas');
+    const ctx=canvas.getContext('2d');
+    canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+    const colors=[topic.color,'#A78BFA','#60A5FA','#34D399','#FBBF24'];
+    const particles=Array.from({length:120},()=>({
+      x:Math.random()*canvas.width,y:-20,
+      vx:(Math.random()-0.5)*4,vy:Math.random()*4+2,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      size:Math.random()*8+4,rotation:Math.random()*360,rotSpeed:(Math.random()-0.5)*6
+    }));
+    let frame=0;
+    function drawConfetti(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p=>{
+        ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rotation*Math.PI/180);
+        ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-frame/180);
+        ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+        ctx.restore();
+        p.x+=p.vx;p.y+=p.vy;p.rotation+=p.rotSpeed;p.vy+=0.06;
+      });
+      frame++;if(frame<200)requestAnimationFrame(drawConfetti);
     }
-    document.getElementById('scoreBadge').textContent=score+' pts';
-    const nb=document.getElementById('nextBtn');
-    nb.className='next-btn show';
-    nb.textContent=current===14?'See Results →':'Next Question →';
+    setTimeout(drawConfetti,600);
   }
-
-  function timeOut(){
-    const q=questions[current];
-    const btns=document.querySelectorAll('.option-btn');
-    btns.forEach(b=>b.disabled=true);
-    btns[q.answer].className='option-btn reveal';
-    const fb=document.getElementById('feedbackBar');
-    fb.textContent='⏰ Time\'s up! Answer: '+q.options[q.answer];
-    fb.className='feedback-bar timeout-fb show';
-    const nb=document.getElementById('nextBtn');
-    nb.className='next-btn show';
-    nb.textContent=current===14?'See Results →':'Next Question →';
-  }
-
-  function nextQuestion(){
-    current++;
-    if(current>=15){
-      sessionStorage.setItem('finalScore',score);
-      sessionStorage.setItem('correctCount',correct);
-      window.location.href='results.html';
-    } else {loadQuestion();}
-  }
-
-  loadQuestion();
 </script>
 </body>
 </html>
