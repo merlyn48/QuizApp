@@ -475,9 +475,13 @@
   animFollower();
 
   // Init
-  const params = new URLSearchParams(window.location.search);
-  const topicId = params.get('topic') || 'kpop';
-  const topic = topics.find(t => t.id === topicId) || topics[0];
+  const topicId = sessionStorage.getItem('selectedTopic') || 'kpop';
+  const difficulty = sessionStorage.getItem('difficulty') || 'easy';
+  const topic = quizData[topicId] || quizData['kpop'];
+  const questions = [...topic[difficulty]].sort(() => Math.random() - 0.5);
+
+  const diffLabels = { easy: '🌱 Easy', medium: '🔥 Medium', hard: '💀 Hard' };
+  const diffColors = { easy: '#34D399', medium: '#FBBF24', hard: '#EF4444' };
 
   document.documentElement.style.setProperty('--topic-color', topic.color);
   document.title = `QuizVibe — ${topic.name}`;
@@ -492,10 +496,10 @@
 
   function renderQuestion() {
     answered = false;
-    const q = topic.questions[currentIndex];
+    const q = questions[currentIndex];
     document.getElementById('currentQ').textContent = currentIndex + 1;
     document.getElementById('progressFill').style.width = (currentIndex / TOTAL * 100) + '%';
-    document.getElementById('topicBadge').innerHTML = `${topic.emoji} ${topic.name}`;
+    document.getElementById('topicBadge').innerHTML = `${topic.emoji} ${topic.name} &nbsp;·&nbsp; <span style="color:${diffColors[difficulty]}">${diffLabels[difficulty]}</span>`;
     document.getElementById('questionText').textContent = q.q;
     document.getElementById('nextBtn').classList.remove('visible');
 
