@@ -166,8 +166,8 @@
     selectedTopic=null;
   }
   function startQuiz(difficulty){
-    sessionStorage.setItem('selectedTopic',selectedTopic);
-    sessionStorage.setItem('difficulty',difficulty);
+    localStorage.setItem('selectedTopic',selectedTopic);
+    localStorage.setItem('difficulty',difficulty);
     window.location.href='quiz.html';
   }
   const grid=document.getElementById('topicsGrid');
