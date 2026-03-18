@@ -302,6 +302,35 @@
       0% { opacity: 1; transform: translateY(-10px) rotate(0deg); }
       100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
     }
+
+    @media (max-width: 768px) {
+      body { cursor: auto; }
+      .cursor, .cursor-follower { display: none; }
+      .container { padding: 1rem; max-width: 100%; }
+      .topbar { margin-bottom: 1.5rem; }
+      .score-hero { padding: 2rem 1.2rem; border-radius: 20px; }
+      .result-emoji { font-size: 3rem; }
+      .result-title { font-size: clamp(1.5rem, 6vw, 2.5rem); }
+      .score-ring { width: 110px; height: 110px; }
+      .score-ring svg { width: 110px; height: 110px; }
+      .score-num { font-size: 1.6rem; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+      .stat-box { padding: 0.8rem 0.5rem; }
+      .stat-value { font-size: 1.4rem; }
+      .stat-label { font-size: 0.65rem; }
+      .message-box { padding: 1rem 1.2rem; }
+      .message-text { font-size: 1rem; }
+      .rec-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
+      .rec-card { padding: 1rem; }
+      .actions { grid-template-columns: 1fr; gap: 0.7rem; margin-bottom: 2rem; }
+      .btn-primary, .btn-secondary { padding: 0.9rem; font-size: 0.9rem; cursor: auto; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .rec-grid { grid-template-columns: 1fr 1fr; }
+      .score-hero { padding: 1.5rem 1rem; }
+    }
   </style>
 </head>
 <body>
