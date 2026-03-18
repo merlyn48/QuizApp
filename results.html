@@ -162,7 +162,7 @@
     card.innerHTML=`<span class="rec-emoji">${t.emoji}</span><div class="rec-name">${t.name}</div><div class="rec-desc">${t.description}</div>`;
     card.addEventListener('mouseenter',()=>{card.style.borderColor=t.color+'44';});
     card.addEventListener('mouseleave',()=>{card.style.borderColor='';});
-    card.onclick=e=>{e.preventDefault();localStorage.setItem('selectedTopic',key);window.location.href='quiz.html';};
+    card.onclick=e=>{e.preventDefault();localStorage.setItem('pendingTopic',key);window.location.href='index.html';};
     recsGrid.appendChild(card);
   });
 
