@@ -414,14 +414,25 @@
 
   // Data
   const score = parseInt(sessionStorage.getItem('quizScore') || 0);
-  const topicId = sessionStorage.getItem('quizTopic') || 'kpop';
+  const topicId = sessionStorage.getItem('selectedTopic') || 'kpop';
+  const difficulty = sessionStorage.getItem('difficulty') || 'easy';
   const total = parseInt(sessionStorage.getItem('quizTotal') || 15);
-  const topic = topics.find(t => t.id === topicId) || topics[0];
+  const topic = quizData[topicId] || quizData['kpop'];
   const pct = Math.round((score / total) * 100);
+
+  const diffLabels = { easy: '🌱 Easy', medium: '🔥 Medium', hard: '💀 Hard' };
+  const diffColors = { easy: '#34D399', medium: '#FBBF24', hard: '#EF4444' };
 
   // Set color
   document.documentElement.style.setProperty('--result-color', topic.color);
   document.querySelector('.orb-1').style.background = topic.color;
+
+  // Show difficulty badge in topbar
+  const topbar = document.querySelector('.topbar');
+  const badge = document.createElement('div');
+  badge.style.cssText = `background:${diffColors[difficulty]}18;border:1px solid ${diffColors[difficulty]}44;color:${diffColors[difficulty]};padding:0.3rem 0.8rem;border-radius:100px;font-size:0.8rem;font-weight:600;`;
+  badge.textContent = diffLabels[difficulty];
+  topbar.insertBefore(badge, topbar.children[1]);
 
   // Result tiers
   const tiers = [
@@ -444,7 +455,8 @@
   document.getElementById('correctCount').textContent = score;
   document.getElementById('wrongCount').textContent = total - score;
   document.getElementById('timeBonus').textContent = tier.grade;
-  document.getElementById('retryBtn').href = `quiz.html?topic=${topicId}`;
+  document.getElementById('retryBtn').href = '#';
+  document.getElementById('retryBtn').onclick = (e) => { e.preventDefault(); window.location.href = 'quiz.html'; };
 
   // Animate score ring
   setTimeout(() => {
@@ -462,12 +474,12 @@
   }, 80);
 
   // Recommendations (3 topics that aren't current)
-  const others = topics.filter(t => t.id !== topicId);
+  const others = Object.entries(quizData).filter(([k]) => k !== topicId);
   const recs = others.sort(() => 0.5 - Math.random()).slice(0, 3);
   const recGrid = document.getElementById('recGrid');
-  recs.forEach(t => {
+  recs.forEach(([key, t]) => {
     const card = document.createElement('a');
-    card.href = `quiz.html?topic=${t.id}`;
+    card.href = '#';
     card.className = 'rec-card';
     card.style.setProperty('--rc-color', t.color);
     card.innerHTML = `
@@ -475,6 +487,11 @@
       <div class="rec-name">${t.name}</div>
       <div class="rec-desc">${t.description}</div>
     `;
+    card.onclick = (e) => {
+      e.preventDefault();
+      sessionStorage.setItem('selectedTopic', key);
+      window.location.href = 'index.html';
+    };
     recGrid.appendChild(card);
   });
 
