@@ -4,516 +4,194 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuizVibe — Results</title>
-  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    :root {
-      --bg: #0a0a0f;
-      --bg2: #111118;
-      --bg3: #1a1a24;
-      --text: #f0eeff;
-      --muted: #7b7a8e;
-      --border: rgba(255,255,255,0.07);
-      --accent: #c44dff;
-    }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      cursor: none;
-    }
-    .cursor {
-      width: 12px; height: 12px; background: #fff;
-      border-radius: 50%; position: fixed;
-      pointer-events: none; z-index: 9999;
-      mix-blend-mode: difference; transition: transform 0.1s;
-    }
-    .cursor-follower {
-      width: 36px; height: 36px;
-      border: 1.5px solid rgba(255,255,255,0.3);
-      border-radius: 50%; position: fixed;
-      pointer-events: none; z-index: 9998;
-      transition: all 0.12s ease; mix-blend-mode: difference;
-    }
-    .bg-grid {
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 60px 60px; z-index: 0;
-    }
-    .orb {
-      position: fixed; border-radius: 50%;
-      filter: blur(90px); opacity: 0.12;
-      z-index: 0; pointer-events: none;
-      animation: float 12s ease-in-out infinite;
-    }
-    .orb-1 { width: 500px; height: 500px; background: var(--result-color, #c44dff); top: -150px; left: 50%; transform: translateX(-50%); }
-    .orb-2 { width: 300px; height: 300px; background: #4361ee; bottom: 0; right: 0; animation-delay: -5s; }
-    @keyframes float {
-      0%,100% { transform: translate(0,0); }
-      50% { transform: translate(0,-20px); }
-    }
-    .container {
-      max-width: 680px; margin: 0 auto;
-      padding: 0 2rem; position: relative; z-index: 1;
-    }
-
-    /* Top nav */
-    .topbar {
-      display: flex; align-items: center;
-      justify-content: space-between;
-      padding: 1.5rem 0;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 3rem;
-    }
-    .logo {
-      font-family: 'Syne', sans-serif; font-weight: 800;
-      font-size: 1.2rem;
-      background: linear-gradient(135deg, #fff, #c44dff);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-
-    /* Hero result */
-    .result-hero {
-      text-align: center;
-      padding: 1rem 0 2.5rem;
-      animation: fadeDown 0.6s ease both;
-    }
-    .result-emoji {
-      font-size: 4rem;
-      display: block;
-      margin-bottom: 1rem;
-      animation: emojiPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
-    }
-    @keyframes emojiPop {
-      from { opacity: 0; transform: scale(0.3); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .result-title {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(2rem, 6vw, 3.5rem);
-      font-weight: 800;
-      letter-spacing: -1px;
-      line-height: 1.1;
-      margin-bottom: 0.8rem;
-    }
-    .result-subtitle {
-      font-size: 1rem;
-      color: var(--muted);
-      max-width: 400px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
-
-    /* Score card */
-    .score-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 2.5rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      animation: fadeUp 0.5s ease 0.3s both;
-    }
-    .score-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--result-color, var(--accent));
-    }
-    .score-ring-wrap {
-      position: relative;
-      width: 140px; height: 140px;
-      margin: 0 auto 1.5rem;
-    }
-    .score-ring-wrap svg { transform: rotate(-90deg); }
-    .ring-bg-s { stroke: var(--bg3); }
-    .ring-fill-s {
-      stroke: var(--result-color, var(--accent));
-      stroke-dasharray: 345;
-      stroke-dashoffset: 345;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
-    }
-    .score-inner {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-    }
-    .score-big {
-      font-family: 'Syne', sans-serif;
-      font-size: 3rem; font-weight: 800;
-      color: var(--result-color, var(--accent));
-      line-height: 1;
-    }
-    .score-out-of {
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-    .score-percent {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.1rem; font-weight: 700;
-      margin-bottom: 0.3rem;
-    }
-    .score-breakdown {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
-    }
-    .breakdown-item { text-align: center; }
-    .breakdown-num {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.3rem; font-weight: 700;
-    }
-    .breakdown-num.correct { color: #6bcb77; }
-    .breakdown-num.wrong { color: #ff6b6b; }
-    .breakdown-label {
-      font-size: 0.75rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* Message card */
-    .message-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 1.8rem;
-      margin-bottom: 1.5rem;
-      animation: fadeUp 0.5s ease 0.4s both;
-      position: relative;
-      overflow: hidden;
-    }
-    .message-card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: var(--result-color, var(--accent));
-      opacity: 0.03;
-    }
-    .message-label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--result-color, var(--accent));
-      margin-bottom: 0.6rem;
-      font-weight: 600;
-    }
-    .message-text {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.15rem;
-      font-weight: 600;
-      line-height: 1.5;
-      color: #fff;
-    }
-
-    /* Recommendations */
-    .rec-section {
-      animation: fadeUp 0.5s ease 0.5s both;
-    }
-    .rec-heading {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--muted);
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
-    .rec-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.8rem;
-      margin-bottom: 2rem;
-    }
-    .rec-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.2rem;
-      text-decoration: none;
-      color: var(--text);
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      cursor: none;
-      display: block;
-    }
-    .rec-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--rc-color, var(--accent));
-      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
-    }
-    .rec-emoji { font-size: 1.6rem; display: block; margin-bottom: 0.5rem; }
-    .rec-name {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.9rem; font-weight: 700;
-    }
-    .rec-desc { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
-
-    /* Actions */
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.8rem;
-      margin-bottom: 3rem;
-      animation: fadeUp 0.5s ease 0.6s both;
-    }
-    .btn-primary {
-      padding: 1rem; background: var(--result-color, var(--accent));
-      color: #000; border: none; border-radius: 14px;
-      font-family: 'Syne', sans-serif; font-size: 0.95rem;
-      font-weight: 700; cursor: none;
-      transition: all 0.2s ease; text-decoration: none;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    .btn-secondary {
-      padding: 1rem; background: var(--bg2);
-      color: var(--text); border: 1px solid var(--border);
-      border-radius: 14px; font-family: 'Syne', sans-serif;
-      font-size: 0.95rem; font-weight: 600; cursor: none;
-      transition: all 0.2s ease; text-decoration: none;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .btn-secondary:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
-
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Confetti */
-    .confetti-piece {
-      position: fixed; pointer-events: none; z-index: 200;
-      animation: confettiFall linear forwards;
-      border-radius: 2px;
-    }
-    @keyframes confettiFall {
-      0% { opacity: 1; transform: translateY(-10px) rotate(0deg); }
-      100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
-    }
-
-    @media (max-width: 768px) {
-      body { cursor: auto; }
-      .cursor, .cursor-follower { display: none; }
-      .container { padding: 1rem; max-width: 100%; }
-      .topbar { margin-bottom: 1.5rem; }
-      .score-hero { padding: 2rem 1.2rem; border-radius: 20px; }
-      .result-emoji { font-size: 3rem; }
-      .result-title { font-size: clamp(1.5rem, 6vw, 2.5rem); }
-      .score-ring { width: 110px; height: 110px; }
-      .score-ring svg { width: 110px; height: 110px; }
-      .score-num { font-size: 1.6rem; }
-      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-      .stat-box { padding: 0.8rem 0.5rem; }
-      .stat-value { font-size: 1.4rem; }
-      .stat-label { font-size: 0.65rem; }
-      .message-box { padding: 1rem 1.2rem; }
-      .message-text { font-size: 1rem; }
-      .rec-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
-      .rec-card { padding: 1rem; }
-      .actions { grid-template-columns: 1fr; gap: 0.7rem; margin-bottom: 2rem; }
-      .btn-primary, .btn-secondary { padding: 0.9rem; font-size: 0.9rem; cursor: auto; }
-    }
-
-    @media (max-width: 480px) {
-      .stats-grid { grid-template-columns: repeat(3, 1fr); }
-      .rec-grid { grid-template-columns: 1fr 1fr; }
-      .score-hero { padding: 1.5rem 1rem; }
-    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--text:#f0eeff;--muted:#7b7a8e;--border:rgba(255,255,255,0.07)}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;cursor:none}
+    .cursor{width:12px;height:12px;background:#fff;border-radius:50%;position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:transform 0.1s}
+    .cursor-follower{width:36px;height:36px;border:1.5px solid rgba(255,255,255,0.3);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transition:all 0.12s ease;mix-blend-mode:difference}
+    .bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:60px 60px;z-index:0}
+    .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.1;animation:float 12s ease-in-out infinite;z-index:0;pointer-events:none}
+    .orb-1{width:400px;height:400px;background:#c44dff;top:-100px;left:-100px}
+    .orb-2{width:300px;height:300px;background:#4361ee;bottom:-100px;right:-100px;animation-delay:-4s}
+    @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)}}
+    #confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:2}
+    .container{max-width:680px;margin:0 auto;padding:2rem;position:relative;z-index:3}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+    .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;background:linear-gradient(135deg,#fff,#c44dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .back-link{color:var(--muted);font-size:0.85rem;text-decoration:none;transition:color 0.2s ease;cursor:none}
+    .back-link:hover{color:var(--text)}
+    .score-hero{background:var(--bg2);border:1px solid var(--border);border-radius:24px;padding:2.5rem 2rem;text-align:center;margin-bottom:1.5rem;animation:fadeUp 0.6s ease both;position:relative;overflow:hidden}
+    .result-emoji{font-size:3.5rem;display:block;margin-bottom:1rem;animation:bounce 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.3s both}
+    @keyframes bounce{from{opacity:0;transform:scale(0) rotate(-20deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+    .result-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;letter-spacing:-1px;margin-bottom:0.5rem;animation:fadeUp 0.6s ease 0.4s both}
+    .result-msg{color:var(--muted);font-size:0.95rem;max-width:380px;margin:0 auto 2rem;line-height:1.6;animation:fadeUp 0.6s ease 0.5s both}
+    .score-ring-wrap{display:flex;justify-content:center;margin-bottom:2rem;animation:fadeUp 0.6s ease 0.6s both}
+    .score-ring{position:relative;width:130px;height:130px}
+    .score-ring svg{transform:rotate(-90deg)}
+    .score-ring circle{fill:none;stroke-width:5;stroke-linecap:round}
+    .ring-bg-r{stroke:var(--border)}
+    .ring-fg-r{stroke-dasharray:345;stroke-dashoffset:345;transition:stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1) 0.8s}
+    .score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .score-pts{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-1px;line-height:1}
+    .score-sub{color:var(--muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;margin-top:0.2rem}
+    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;animation:fadeUp 0.6s ease 0.7s both}
+    .stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1rem;text-align:center;transition:all 0.3s ease}
+    .stat-box:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.15)}
+    .stat-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;letter-spacing:-1px;display:block;margin-bottom:0.2rem}
+    .stat-lbl{color:var(--muted);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px}
+    .section-title{font-family:'Syne',sans-serif;font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin:1.5rem 0 1rem;font-weight:600;animation:fadeUp 0.6s ease 0.8s both}
+    .recs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.9rem;margin-bottom:1.5rem}
+    .rec-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.2rem;text-decoration:none;color:var(--text);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);cursor:none;display:block;animation:fadeUp 0.6s ease both}
+    .rec-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,0.3)}
+    .rec-emoji{font-size:1.8rem;display:block;margin-bottom:0.5rem}
+    .rec-name{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.2rem}
+    .rec-desc{color:var(--muted);font-size:0.75rem}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;margin-bottom:3rem;animation:fadeUp 0.6s ease 1s both}
+    .btn-primary{padding:1rem;border:none;border-radius:14px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;cursor:none;transition:all 0.3s ease;text-align:center;display:flex;align-items:center;justify-content:center}
+    .btn-primary:hover{transform:translateY(-2px);filter:brightness(1.1)}
+    .btn-secondary{padding:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:'Syne',sans-serif;font-weight:600;font-size:0.95rem;cursor:none;transition:all 0.3s ease;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center}
+    .btn-secondary:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-2px)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @media(hover:none){body{cursor:auto}.cursor,.cursor-follower{display:none}}
+    @media(max-width:768px){.container{padding:1rem;max-width:100%}.score-hero{padding:1.8rem 1.2rem;border-radius:20px}.result-emoji{font-size:2.8rem}.score-ring{width:110px;height:110px}.score-pts{font-size:1.7rem}.recs-grid{grid-template-columns:1fr 1fr;gap:0.7rem}.actions{grid-template-columns:1fr;gap:0.7rem}.stat-val{font-size:1.5rem}}
+    @media(max-width:480px){.recs-grid{grid-template-columns:1fr 1fr}.score-hero{padding:1.4rem 1rem}}
   </style>
 </head>
 <body>
-
 <div class="cursor" id="cursor"></div>
 <div class="cursor-follower" id="follower"></div>
 <div class="bg-grid"></div>
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
-
+<canvas id="confettiCanvas"></canvas>
 <div class="container">
   <div class="topbar">
     <div class="logo">QuizVibe✦</div>
-    <a href="index.html" style="color:var(--muted);font-size:0.85rem;text-decoration:none;cursor:none;">← All topics</a>
+    <a href="index.html" class="back-link">← All topics</a>
   </div>
-
-  <div class="result-hero">
-    <span class="result-emoji" id="resultEmoji"></span>
-    <div class="result-title" id="resultTitle"></div>
-    <div class="result-subtitle" id="resultSubtitle"></div>
-  </div>
-
-  <div class="score-card">
+  <div class="score-hero" id="scoreHero">
+    <span class="result-emoji" id="resultEmoji">🎉</span>
+    <div class="result-title" id="resultTitle">Amazing!</div>
+    <div class="result-msg" id="resultMsg">You crushed it!</div>
     <div class="score-ring-wrap">
-      <svg width="140" height="140" viewBox="0 0 140 140">
-        <circle class="ring-bg-s" cx="70" cy="70" r="55" fill="none" stroke-width="6"/>
-        <circle class="ring-fill-s" id="scoreRing" cx="70" cy="70" r="55" fill="none" stroke-width="6"/>
-      </svg>
-      <div class="score-inner">
-        <div class="score-big" id="scoreBig">0</div>
-        <div class="score-out-of">out of 15</div>
+      <div class="score-ring">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle class="ring-bg-r" cx="65" cy="65" r="55"/>
+          <circle class="ring-fg-r" id="ringFg" cx="65" cy="65" r="55"/>
+        </svg>
+        <div class="score-inner">
+          <span class="score-pts" id="scorePts">0</span>
+          <span class="score-sub">points</span>
+        </div>
       </div>
     </div>
-    <div class="score-percent" id="scorePercent"></div>
-    <div class="score-breakdown">
-      <div class="breakdown-item">
-        <div class="breakdown-num correct" id="correctCount">0</div>
-        <div class="breakdown-label">Correct</div>
-      </div>
-      <div class="breakdown-item">
-        <div class="breakdown-num wrong" id="wrongCount">0</div>
-        <div class="breakdown-label">Wrong</div>
-      </div>
-      <div class="breakdown-item">
-        <div class="breakdown-num" id="timeBonus" style="color:var(--result-color)">—</div>
-        <div class="breakdown-label">Grade</div>
-      </div>
+    <div class="stats-grid">
+      <div class="stat-box"><span class="stat-val" id="statCorrect">0</span><span class="stat-lbl">Correct</span></div>
+      <div class="stat-box"><span class="stat-val" id="statWrong">0</span><span class="stat-lbl">Wrong</span></div>
+      <div class="stat-box"><span class="stat-val" id="statPct">0%</span><span class="stat-lbl">Accuracy</span></div>
     </div>
   </div>
-
-  <div class="message-card">
-    <div class="message-label">Your verdict</div>
-    <div class="message-text" id="messageText"></div>
-  </div>
-
-  <div class="rec-section">
-    <div class="rec-heading">Try these next</div>
-    <div class="rec-grid" id="recGrid"></div>
-  </div>
-
+  <div class="section-title">Try these next</div>
+  <div class="recs-grid" id="recsGrid"></div>
   <div class="actions">
-    <a id="retryBtn" href="#" class="btn-primary">↺ Retry this topic</a>
-    <a href="index.html" class="btn-secondary">⊞ All topics</a>
+    <button class="btn-primary" id="retryBtn" onclick="retry()">↺ Play Again</button>
+    <a href="index.html" class="btn-secondary">← All Topics</a>
   </div>
 </div>
-
-<script src="data.js"></script>
+<script src="./data.js"></script>
 <script>
-  // Cursor
-  const cursor = document.getElementById('cursor');
-  const follower = document.getElementById('follower');
+  const cursor=document.getElementById('cursor');
+  const follower=document.getElementById('follower');
   let mx=0,my=0,fx=0,fy=0;
-  document.addEventListener('mousemove',e=>{
-    mx=e.clientX;my=e.clientY;
-    cursor.style.left=mx-6+'px';cursor.style.top=my-6+'px';
-  });
-  function af(){fx+=(mx-fx)*0.15;fy+=(my-fy)*0.15;
-    follower.style.left=fx-18+'px';follower.style.top=fy-18+'px';
-    requestAnimationFrame(af);}
-  af();
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx-6+'px';cursor.style.top=my-6+'px';});
+  function animFollower(){fx+=(mx-fx)*0.15;fy+=(my-fy)*0.15;follower.style.left=fx-18+'px';follower.style.top=fy-18+'px';requestAnimationFrame(animFollower);}
+  animFollower();
 
-  // Data
-  const score = parseInt(sessionStorage.getItem('quizScore') || 0);
-  const topicId = sessionStorage.getItem('selectedTopic') || 'kpop';
-  const difficulty = sessionStorage.getItem('difficulty') || 'easy';
-  const total = parseInt(sessionStorage.getItem('quizTotal') || 15);
-  const topic = quizData[topicId] || quizData['kpop'];
-  const pct = Math.round((score / total) * 100);
+  const topicId=localStorage.getItem('selectedTopic')||'kpop';
+  const difficulty=localStorage.getItem('difficulty')||'easy';
+  const topic=quizData[topicId]||quizData['kpop'];
+  const score=parseInt(localStorage.getItem('finalScore'))||0;
+  const correct=parseInt(localStorage.getItem('correctCount'))||0;
+  const wrong=15-correct;
+  const pct=Math.round((correct/15)*100);
 
-  const diffLabels = { easy: '🌱 Easy', medium: '🔥 Medium', hard: '💀 Hard' };
-  const diffColors = { easy: '#34D399', medium: '#FBBF24', hard: '#EF4444' };
-
-  // Set color
-  document.documentElement.style.setProperty('--result-color', topic.color);
-  document.querySelector('.orb-1').style.background = topic.color;
-
-  // Show difficulty badge in topbar
-  const topbar = document.querySelector('.topbar');
-  const badge = document.createElement('div');
-  badge.style.cssText = `background:${diffColors[difficulty]}18;border:1px solid ${diffColors[difficulty]}44;color:${diffColors[difficulty]};padding:0.3rem 0.8rem;border-radius:100px;font-size:0.8rem;font-weight:600;`;
-  badge.textContent = diffLabels[difficulty];
-  topbar.insertBefore(badge, topbar.children[1]);
-
-  // Result tiers
-  const tiers = [
-    { min: 14, emoji: '🏆', title: 'Absolute Legend', subtitle: `You basically wrote the book on ${topic.name}.`, message: 'Flawless. Untouchable. You didn\'t just pass — you dominated. There\'s nothing left to prove here. Go touch grass.', grade: 'S+' },
-    { min: 12, emoji: '🔥', title: 'On Fire!', subtitle: `${topic.name} has nothing on you.`, message: 'Nearly perfect. You clearly eat, sleep, and breathe this stuff. One or two slips but nothing that takes away from how impressive that was.', grade: 'A+' },
-    { min: 10, emoji: '✨', title: 'Pretty Impressive', subtitle: `Solid ${topic.name} knowledge right there.`, message: 'You know your stuff! A few tricky ones caught you out but overall you\'re clearly well-versed. A little more studying and you\'re unstoppable.', grade: 'A' },
-    { min: 8, emoji: '👍', title: 'Not Bad At All', subtitle: 'More than halfway there — respect.', message: 'A decent performance! You\'ve got a good foundation. A few more rounds and you\'ll be flying. Don\'t stop now.', grade: 'B' },
-    { min: 5, emoji: '📚', title: 'Room To Grow', subtitle: 'The knowledge is there... somewhere.', message: 'You\'re getting there! Some questions got the better of you today, but that just means there\'s exciting stuff to learn. Try again — you\'ve got this.', grade: 'C' },
-    { min: 0, emoji: '😅', title: 'Yikes...', subtitle: 'That was... a journey.', message: 'Okay so today wasn\'t your day — and that\'s completely fine! Now you know what to brush up on. Retry it and you\'ll be surprised how much sticks the second time.', grade: 'D' }
+  const messages=[
+    {min:0,max:3,emoji:'😅',title:'Keep Practicing!',msg:"Don't worry — every expert was a beginner once. Try again!"},
+    {min:4,max:7,emoji:'🙂',title:'Not Bad!',msg:"You're getting there! A bit more practice and you'll nail it."},
+    {min:8,max:10,emoji:'😎',title:'Pretty Good!',msg:'Solid effort! You clearly know your stuff on this topic.'},
+    {min:11,max:12,emoji:'🔥',title:'On Fire!',msg:"Wow, you're really good at this! Almost a perfect score!"},
+    {min:13,max:15,emoji:'🏆',title:'Legendary!',msg:'Perfect or near-perfect! You are an absolute master of this topic!'}
   ];
+  const result=messages.find(m=>correct>=m.min&&correct<=m.max)||messages[0];
 
-  const tier = tiers.find(t => score >= t.min);
+  document.getElementById('resultEmoji').textContent=result.emoji;
+  document.getElementById('resultTitle').textContent=result.title;
+  document.getElementById('resultMsg').textContent=result.msg;
+  document.getElementById('statCorrect').textContent=correct;
+  document.getElementById('statWrong').textContent=wrong;
+  document.getElementById('statPct').textContent=pct+'%';
+  document.getElementById('statCorrect').style.color=topic.color;
+  document.getElementById('statPct').style.color=topic.color;
 
-  document.getElementById('resultEmoji').textContent = tier.emoji;
-  document.getElementById('resultTitle').textContent = tier.title;
-  document.getElementById('resultSubtitle').textContent = tier.subtitle;
-  document.getElementById('messageText').textContent = tier.message;
-  document.getElementById('scoreBig').textContent = score;
-  document.getElementById('scorePercent').textContent = pct + '% accuracy';
-  document.getElementById('correctCount').textContent = score;
-  document.getElementById('wrongCount').textContent = total - score;
-  document.getElementById('timeBonus').textContent = tier.grade;
-  document.getElementById('retryBtn').href = '#';
-  document.getElementById('retryBtn').onclick = (e) => { e.preventDefault(); window.location.href = 'quiz.html'; };
+  const hero=document.getElementById('scoreHero');
+  hero.style.borderColor=topic.color+'33';
+  document.getElementById('ringFg').style.stroke=topic.color;
+  document.getElementById('retryBtn').style.background=topic.bg;
 
-  // Animate score ring
-  setTimeout(() => {
-    const ring = document.getElementById('scoreRing');
-    const circumference = 345;
-    const offset = circumference - (pct / 100) * circumference;
-    ring.style.strokeDashoffset = offset;
-  }, 100);
+  setTimeout(()=>{
+    const offset=345*(1-pct/100);
+    document.getElementById('ringFg').style.strokeDashoffset=offset;
+  },100);
 
-  // Animate score number
-  let displayed = 0;
-  const interval = setInterval(() => {
-    if (displayed < score) { displayed++; document.getElementById('scoreBig').textContent = displayed; }
-    else clearInterval(interval);
-  }, 80);
+  let displayed=0;
+  const counter=setInterval(()=>{
+    displayed=Math.min(displayed+Math.ceil(score/40),score);
+    document.getElementById('scorePts').textContent=displayed;
+    if(displayed>=score)clearInterval(counter);
+  },30);
 
-  // Recommendations (3 topics that aren't current)
-  const others = Object.entries(quizData).filter(([k]) => k !== topicId);
-  const recs = others.sort(() => 0.5 - Math.random()).slice(0, 3);
-  const recGrid = document.getElementById('recGrid');
-  recs.forEach(([key, t]) => {
-    const card = document.createElement('a');
-    card.href = '#';
-    card.className = 'rec-card';
-    card.style.setProperty('--rc-color', t.color);
-    card.innerHTML = `
-      <span class="rec-emoji">${t.emoji}</span>
-      <div class="rec-name">${t.name}</div>
-      <div class="rec-desc">${t.description}</div>
-    `;
-    card.onclick = (e) => {
-      e.preventDefault();
-      sessionStorage.setItem('selectedTopic', key);
-      window.location.href = 'index.html';
-    };
-    recGrid.appendChild(card);
+  const others=Object.entries(quizData).filter(([k])=>k!==topicId).sort(()=>Math.random()-0.5).slice(0,4);
+  const recsGrid=document.getElementById('recsGrid');
+  others.forEach(([key,t],i)=>{
+    const card=document.createElement('a');
+    card.className='rec-card';
+    card.href='#';
+    card.style.animationDelay=(0.9+i*0.1)+'s';
+    card.innerHTML=`<span class="rec-emoji">${t.emoji}</span><div class="rec-name">${t.name}</div><div class="rec-desc">${t.description}</div>`;
+    card.addEventListener('mouseenter',()=>{card.style.borderColor=t.color+'44';});
+    card.addEventListener('mouseleave',()=>{card.style.borderColor='';});
+    card.onclick=e=>{e.preventDefault();localStorage.setItem('selectedTopic',key);window.location.href='quiz.html';};
+    recsGrid.appendChild(card);
   });
 
-  // Confetti for high scores
-  if (score >= 10) {
-    const colors = [topic.color, '#fff', '#ffd93d', '#6bcb77', '#4cc9f0'];
-    for (let i = 0; i < 60; i++) {
-      setTimeout(() => {
-        const c = document.createElement('div');
-        c.className = 'confetti-piece';
-        const size = Math.random() * 8 + 4;
-        c.style.cssText = `
-          width:${size}px;height:${size * 0.4}px;
-          background:${colors[Math.floor(Math.random()*colors.length)]};
-          left:${Math.random()*100}vw;top:-10px;
-          animation-duration:${Math.random()*2+1.5}s;
-          animation-delay:${Math.random()*0.5}s;
-        `;
-        document.body.appendChild(c);
-        setTimeout(() => c.remove(), 4000);
-      }, i * 30);
+  function retry(){window.location.href='quiz.html';}
+
+  if(correct>=11){
+    const canvas=document.getElementById('confettiCanvas');
+    const ctx=canvas.getContext('2d');
+    canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+    const colors=[topic.color,'#A78BFA','#60A5FA','#34D399','#FBBF24'];
+    const particles=Array.from({length:120},()=>({
+      x:Math.random()*canvas.width,y:-20,
+      vx:(Math.random()-0.5)*4,vy:Math.random()*4+2,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      size:Math.random()*8+4,rotation:Math.random()*360,rotSpeed:(Math.random()-0.5)*6
+    }));
+    let frame=0;
+    function drawConfetti(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p=>{
+        ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rotation*Math.PI/180);
+        ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-frame/180);
+        ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+        ctx.restore();
+        p.x+=p.vx;p.y+=p.vy;p.rotation+=p.rotSpeed;p.vy+=0.06;
+      });
+      frame++;if(frame<200)requestAnimationFrame(drawConfetti);
     }
+    setTimeout(drawConfetti,600);
   }
 </script>
 </body>
