@@ -171,6 +171,13 @@
     window.location.href='quiz.html';
   }
   const grid=document.getElementById('topicsGrid');
+  // Auto-open modal if coming from results page recommendation
+  const pendingTopic = localStorage.getItem('pendingTopic');
+  if (pendingTopic && quizData[pendingTopic]) {
+    localStorage.removeItem('pendingTopic');
+    setTimeout(() => openModal(pendingTopic), 400);
+  }
+
   Object.entries(quizData).forEach(([key,topic])=>{
     const card=document.createElement('div');
     card.className='topic-card';
