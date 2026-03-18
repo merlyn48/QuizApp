@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizVibe — Test Your Knowledge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #1a1a24;
+      --text: #f0eeff;
+      --muted: #7b7a8e;
+      --border: rgba(255,255,255,0.07);
+      --glow: rgba(196,77,255,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      width: 12px; height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.1s;
+      mix-blend-mode: difference;
+    }
+    .cursor-follower {
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transition: all 0.12s ease;
+      mix-blend-mode: difference;
+    }
+
+    /* Animated background grid */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: 0;
+      animation: gridDrift 20s linear infinite;
+    }
+    @keyframes gridDrift {
+      0% { transform: translate(0,0); }
+      100% { transform: translate(60px, 60px); }
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+      animation: float 12s ease-in-out infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .orb-1 { width: 500px; height: 500px; background: #c44dff; top: -100px; left: -100px; animation-delay: 0s; }
+    .orb-2 { width: 400px; height: 400px; background: #4361ee; bottom: -100px; right: -100px; animation-delay: -4s; }
+    .orb-3 { width: 300px; height: 300px; background: #ff6b9d; top: 40%; left: 40%; animation-delay: -8s; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Nav */
+    nav {
+      padding: 1.5rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff, #c44dff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-badge {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 5rem 0 3rem;
+      text-align: center;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(196,77,255,0.1);
+      border: 1px solid rgba(196,77,255,0.2);
+      padding: 0.4rem 1.2rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      color: #c44dff;
+      margin-bottom: 1.5rem;
+      animation: fadeDown 0.6s ease both;
+    }
+    .hero-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #c44dff;
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.5); }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -2px;
+      margin-bottom: 1.2rem;
+      animation: fadeDown 0.6s ease 0.1s both;
+    }
+    h1 span {
+      background: linear-gradient(135deg, #c44dff, #4361ee, #ff6b9d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 200%;
+      animation: gradShift 4s ease infinite;
+    }
+    @keyframes gradShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+      animation: fadeDown 0.6s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      animation: fadeDown 0.6s ease 0.3s both;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .stat-divider {
+      width: 1px;
+      background: var(--border);
+      align-self: stretch;
+    }
+
+    /* Section heading */
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease 0.4s both;
+    }
+    .section-heading h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Topic Grid */
+    .topics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      padding-bottom: 4rem;
+    }
+
+    .topic-card {
+      position: relative;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      cursor: none;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeUp 0.5s ease both;
+      text-decoration: none;
+      display: block;
+    }
+    .topic-card:nth-child(1) { animation-delay: 0.1s; }
+    .topic-card:nth-child(2) { animation-delay: 0.15s; }
+    .topic-card:nth-child(3) { animation-delay: 0.2s; }
+    .topic-card:nth-child(4) { animation-delay: 0.25s; }
+    .topic-card:nth-child(5) { animation-delay: 0.3s; }
+    .topic-card:nth-child(6) { animation-delay: 0.35s; }
+
+    .topic-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      border-radius: 20px;
+    }
+    .topic-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--card-color, #fff);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .topic-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--card-color, #fff);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px var(--card-glow, transparent);
+    }
+    .topic-card:hover::before { opacity: 0.05; }
+    .topic-card:hover::after { opacity: 1; }
+    .topic-card:hover .topic-emoji { transform: scale(1.2) rotate(-5deg); }
+    .topic-card:hover .topic-arrow { transform: translate(4px, -4px); opacity: 1; }
+    .topic-card:hover .card-shine { opacity: 1; }
+
+    .card-shine {
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.03) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .topic-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+    .topic-emoji {
+      font-size: 2.2rem;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: block;
+    }
+    .topic-arrow {
+      font-size: 1.1rem;
+      opacity: 0.3;
+      transition: all 0.3s ease;
+      color: var(--card-color);
+    }
+
+    .topic-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: #fff;
+    }
+    .topic-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 1.4rem;
+      line-height: 1.5;
+    }
+
+    .topic-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topic-pills {
+      display: flex;
+      gap: 0.4rem;
+    }
+    .pill {
+      padding: 0.2rem 0.7rem;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      background: var(--bg3);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .pill-accent {
+      background: rgba(255,255,255,0.05);
+      color: var(--card-color);
+      border-color: var(--card-color);
+    }
+
+    .topic-progress-ring {
+      width: 36px; height: 36px;
+      position: relative;
+    }
+    .topic-progress-ring svg {
+      transform: rotate(-90deg);
+    }
+    .ring-bg { stroke: var(--bg3); }
+    .ring-fill {
+      stroke: var(--card-color);
+      stroke-dasharray: 88;
+      stroke-dashoffset: 88;
+      transition: stroke-dashoffset 1s ease;
+      stroke-linecap: round;
+    }
+    .topic-card:hover .ring-fill {
+      stroke-dashoffset: 22;
+    }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 768px) {
+      .topics-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 2.5rem; }
+      .hero-stats { gap: 1rem; }
+    }
+    @media (max-width: 480px) {
+      .topics-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="follower"></div>
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="container">
+  <nav>
+    <div class="logo">QuizVibe✦</div>
+    <div class="nav-badge">6 topics · 90 questions</div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag">New questions added weekly</div>
+    <h1>Test Your<br/><span>Knowledge.</span></h1>
+    <p class="hero-sub">Pick a topic, beat the timer, flex your score. 15 questions. 30 seconds each. No mercy.</p>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Topics</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num">15</div>
+        <div class="stat-label">Questions</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num">30s</div>
+        <div class="stat-label">Per Question</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-heading">
+    <h2>Choose a topic</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="topics-grid" id="topicsGrid"></div>
+</div>
+
+<footer>
+  <div class="container">made with ✦ QuizVibe — challenge yourself every day</div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const follower = document.getElementById('follower');
+  let mx = 0, my = 0, fx = 0, fy = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 6 + 'px';
+    cursor.style.top = my - 6 + 'px';
+  });
+  function animateFollower() {
+    fx += (mx - fx) * 0.15;
+    fy += (my - fy) * 0.15;
+    follower.style.left = fx - 18 + 'px';
+    follower.style.top = fy - 18 + 'px';
+    requestAnimationFrame(animateFollower);
+  }
+  animateFollower();
+
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'scale(2)';
+      follower.style.transform = 'scale(1.5)';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'scale(1)';
+      follower.style.transform = 'scale(1)';
+    });
+  });
+
+  // Render topic cards
+  const grid = document.getElementById('topicsGrid');
+  topics.forEach(topic => {
+    const card = document.createElement('a');
+    card.href = `quiz.html?topic=${topic.id}`;
+    card.className = 'topic-card';
+    card.style.setProperty('--card-color', topic.color);
+    card.style.setProperty('--card-glow', topic.color + '33');
+    card.innerHTML = `
+      <div class="card-shine"></div>
+      <div style="position:absolute;inset:0;background:${topic.gradient};opacity:0.04;border-radius:20px;pointer-events:none;"></div>
+      <div class="topic-header">
+        <span class="topic-emoji">${topic.emoji}</span>
+        <span class="topic-arrow">↗</span>
+      </div>
+      <div class="topic-name">${topic.name}</div>
+      <div class="topic-desc">${topic.description}</div>
+      <div class="topic-footer">
+        <div class="topic-pills">
+          <span class="pill">15 Qs</span>
+          <span class="pill pill-accent">30s</span>
+        </div>
+        <div class="topic-progress-ring">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle class="ring-bg" cx="18" cy="18" r="14" fill="none" stroke-width="2"/>
+            <circle class="ring-fill" cx="18" cy="18" r="14" fill="none" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    // 3D tilt effect
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `translateY(-8px) scale(1.02) rotateX(${-y * 8}deg) rotateY(${x * 8}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
+</script>
+</body>
+</html>
