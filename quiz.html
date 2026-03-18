@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizVibe — Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #1a1a24;
+      --text: #f0eeff;
+      --muted: #7b7a8e;
+      --border: rgba(255,255,255,0.07);
+      --accent: #c44dff;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+    .cursor {
+      width: 12px; height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: difference;
+      transition: transform 0.1s;
+    }
+    .cursor-follower {
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transition: all 0.12s ease;
+      mix-blend-mode: difference;
+    }
+    .bg-grid {
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: 0;
+    }
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(90px); opacity: 0.1;
+      z-index: 0; pointer-events: none;
+      animation: float 12s ease-in-out infinite;
+    }
+    .orb-1 { width: 400px; height: 400px; background: var(--topic-color, #c44dff); top: -100px; right: -100px; }
+    .orb-2 { width: 300px; height: 300px; background: #4361ee; bottom: 0; left: -50px; animation-delay: -6s; }
+    @keyframes float {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(20px,-20px); }
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+      cursor: none;
+    }
+    .back-btn:hover { color: #fff; }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .score-display {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+    }
+    .score-num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--topic-color, var(--accent));
+    }
+
+    /* Progress */
+    .progress-section {
+      margin-bottom: 2rem;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+    .q-counter {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .q-fraction {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .progress-bar-wrap {
+      height: 4px;
+      background: var(--bg3);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--topic-color, var(--accent));
+      border-radius: 100px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px var(--topic-color, var(--accent));
+    }
+
+    /* Timer */
+    .timer-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .timer-ring-wrap {
+      position: relative;
+      width: 90px; height: 90px;
+    }
+    .timer-ring-wrap svg {
+      transform: rotate(-90deg);
+    }
+    .timer-ring-bg { stroke: var(--bg3); }
+    .timer-ring-fill {
+      stroke: var(--topic-color, var(--accent));
+      stroke-dasharray: 226;
+      stroke-dashoffset: 0;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+    }
+    .timer-number {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+    .timer-urgent { color: #ff4444 !important; }
+    .timer-ring-fill.urgent { stroke: #ff4444; }
+
+    /* Question card */
+    .question-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .question-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--topic-color, var(--accent));
+      opacity: 0.6;
+    }
+    .topic-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.8rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+    .question-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #fff;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(40px) scale(0.97); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateX(0) scale(1); }
+      to { opacity: 0; transform: translateX(-40px) scale(0.97); }
+    }
+    .slide-out { animation: slideOut 0.3s ease both; }
+
+    /* Options */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+    .option-btn {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      text-align: left;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      cursor: none;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .option-letter {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--topic-color, var(--accent));
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      background: var(--bg3);
+    }
+    .option-btn:hover:not(:disabled) .option-letter {
+      background: var(--topic-color, var(--accent));
+      border-color: var(--topic-color, var(--accent));
+      color: #000;
+    }
+    .option-btn.correct {
+      background: rgba(107, 203, 119, 0.1);
+      border-color: #6bcb77;
+      color: #6bcb77;
+      animation: correctPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .option-btn.correct .option-letter {
+      background: #6bcb77;
+      border-color: #6bcb77;
+      color: #000;
+    }
+    .option-btn.wrong {
+      background: rgba(255, 68, 68, 0.1);
+      border-color: #ff4444;
+      color: #ff4444;
+      animation: wrongShake 0.4s ease;
+    }
+    .option-btn.wrong .option-letter {
+      background: #ff4444;
+      border-color: #ff4444;
+      color: #fff;
+    }
+    .option-btn.reveal-correct {
+      background: rgba(107, 203, 119, 0.05);
+      border-color: rgba(107, 203, 119, 0.4);
+      color: #6bcb77;
+    }
+    .option-btn.reveal-correct .option-letter {
+      background: rgba(107, 203, 119, 0.2);
+      border-color: #6bcb77;
+      color: #6bcb77;
+    }
+    @keyframes correctPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+    @keyframes wrongShake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    /* Feedback toast */
+    .feedback-toast {
+      position: fixed;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 0.7rem 1.5rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 100;
+      white-space: nowrap;
+    }
+    .feedback-toast.show { transform: translateX(-50%) translateY(0); }
+    .feedback-toast.correct-toast { border-color: #6bcb77; color: #6bcb77; }
+    .feedback-toast.wrong-toast { border-color: #ff4444; color: #ff4444; }
+
+    /* Next btn */
+    .next-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--topic-color, var(--accent));
+      color: #000;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: none;
+      margin-top: 1rem;
+      display: none;
+      transition: all 0.2s ease;
+      letter-spacing: 0.5px;
+    }
+    .next-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .next-btn.visible { display: block; animation: fadeUp 0.3s ease both; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Particles */
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 50;
+      border-radius: 50%;
+      animation: particleFly 0.8s ease-out forwards;
+    }
+    @keyframes particleFly {
+      0% { opacity: 1; transform: translate(0,0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="follower"></div>
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="feedback-toast" id="feedbackToast"></div>
+
+<div class="container">
+  <div class="topbar">
+    <a href="index.html" class="back-btn">← Back to topics</a>
+    <div class="topbar-right">
+      <div class="score-display">
+        Score: <span class="score-num" id="scoreNum">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-meta">
+      <span class="q-counter">Question</span>
+      <span class="q-fraction"><span id="currentQ">1</span> / 15</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="timer-section">
+    <div class="timer-ring-wrap">
+      <svg width="90" height="90" viewBox="0 0 90 90">
+        <circle class="timer-ring-bg" cx="45" cy="45" r="36" fill="none" stroke-width="4"/>
+        <circle class="timer-ring-fill" id="timerRing" cx="45" cy="45" r="36" fill="none" stroke-width="4"/>
+      </svg>
+      <div class="timer-number" id="timerNum">30</div>
+    </div>
+  </div>
+
+  <div class="question-card" id="questionCard">
+    <div class="topic-badge" id="topicBadge"></div>
+    <div class="question-text" id="questionText"></div>
+  </div>
+
+  <div class="options-grid" id="optionsGrid"></div>
+  <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+</div>
+
+<script src="data.js"></script>
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const follower = document.getElementById('follower');
+  let mx = 0, my = 0, fx = 0, fy = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 6 + 'px';
+    cursor.style.top = my - 6 + 'px';
+  });
+  function animFollower() {
+    fx += (mx - fx) * 0.15;
+    fy += (my - fy) * 0.15;
+    follower.style.left = fx - 18 + 'px';
+    follower.style.top = fy - 18 + 'px';
+    requestAnimationFrame(animFollower);
+  }
+  animFollower();
+
+  // Init
+  const params = new URLSearchParams(window.location.search);
+  const topicId = params.get('topic') || 'kpop';
+  const topic = topics.find(t => t.id === topicId) || topics[0];
+
+  document.documentElement.style.setProperty('--topic-color', topic.color);
+  document.title = `QuizVibe — ${topic.name}`;
+
+  let currentIndex = 0;
+  let score = 0;
+  let timeLeft = 30;
+  let timerInterval = null;
+  let answered = false;
+  const TOTAL = 15;
+  const circumference = 226;
+
+  function renderQuestion() {
+    answered = false;
+    const q = topic.questions[currentIndex];
+    document.getElementById('currentQ').textContent = currentIndex + 1;
+    document.getElementById('progressFill').style.width = (currentIndex / TOTAL * 100) + '%';
+    document.getElementById('topicBadge').innerHTML = `${topic.emoji} ${topic.name}`;
+    document.getElementById('questionText').textContent = q.q;
+    document.getElementById('nextBtn').classList.remove('visible');
+
+    const grid = document.getElementById('optionsGrid');
+    grid.innerHTML = '';
+    const letters = ['A', 'B', 'C', 'D'];
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+      btn.onclick = () => selectAnswer(i, q.answer, btn);
+      grid.appendChild(btn);
+    });
+
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = 30;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        if (!answered) timeExpired();
+      }
+    }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    const el = document.getElementById('timerNum');
+    const ring = document.getElementById('timerRing');
+    el.textContent = timeLeft;
+    const offset = circumference - (timeLeft / 30) * circumference;
+    ring.style.strokeDashoffset = offset;
+    if (timeLeft <= 8) {
+      el.classList.add('timer-urgent');
+      ring.classList.add('urgent');
+    } else {
+      el.classList.remove('timer-urgent');
+      ring.classList.remove('urgent');
+    }
+  }
+
+  function timeExpired() {
+    answered = true;
+    const q = topic.questions[currentIndex];
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(b => b.disabled = true);
+    btns[q.answer].classList.add('reveal-correct');
+    showToast('⏰ Time\'s up!', 'wrong-toast');
+    document.getElementById('nextBtn').classList.add('visible');
+  }
+
+  function selectAnswer(selected, correct, btn) {
+    if (answered) return;
+    answered = true;
+    clearInterval(timerInterval);
+
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(b => b.disabled = true);
+
+    if (selected === correct) {
+      score++;
+      document.getElementById('scoreNum').textContent = score;
+      btn.classList.add('correct');
+      showToast('✦ Correct!', 'correct-toast');
+      spawnParticles(btn);
+    } else {
+      btn.classList.add('wrong');
+      btns[correct].classList.add('reveal-correct');
+      showToast('✕ Wrong answer', 'wrong-toast');
+    }
+
+    document.getElementById('nextBtn').classList.add('visible');
+    if (currentIndex === TOTAL - 1) {
+      document.getElementById('nextBtn').textContent = 'See Results →';
+    }
+  }
+
+  function nextQuestion() {
+    currentIndex++;
+    if (currentIndex >= TOTAL) {
+      sessionStorage.setItem('quizScore', score);
+      sessionStorage.setItem('quizTopic', topicId);
+      sessionStorage.setItem('quizTotal', TOTAL);
+      window.location.href = 'results.html';
+      return;
+    }
+    const card = document.getElementById('questionCard');
+    card.classList.add('slide-out');
+    setTimeout(() => {
+      card.classList.remove('slide-out');
+      renderQuestion();
+    }, 300);
+  }
+
+  function showToast(msg, cls) {
+    const toast = document.getElementById('feedbackToast');
+    toast.textContent = msg;
+    toast.className = `feedback-toast ${cls} show`;
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function spawnParticles(btn) {
+    const rect = btn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    for (let i = 0; i < 10; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 8 + 4;
+      const angle = (Math.PI * 2 / 10) * i;
+      const dist = Math.random() * 80 + 40;
+      p.style.cssText = `
+        width:${size}px;height:${size}px;
+        background:${topic.color};
+        left:${cx}px;top:${cy}px;
+        --dx:${Math.cos(angle)*dist}px;
+        --dy:${Math.sin(angle)*dist}px;
+      `;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 800);
+    }
+  }
+
+  renderQuestion();
+</script>
+</body>
+</html>
