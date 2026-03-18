@@ -474,9 +474,127 @@
   <div class="container">made with ✦ QuizVibe — challenge yourself every day</div>
 </footer>
 
+<!-- Difficulty Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+<div class="modal" id="diffModal">
+  <div class="modal-topic-header" id="modalTopicHeader">
+    <span class="modal-emoji" id="modalEmoji">🎤</span>
+    <div>
+      <div class="modal-topic-name" id="modalTopicName">K-Pop</div>
+      <div class="modal-topic-desc" id="modalTopicDesc">Stan culture & idol trivia</div>
+    </div>
+  </div>
+  <div class="modal-title">Choose your difficulty</div>
+  <div class="diff-grid">
+    <button class="diff-btn diff-easy" onclick="startQuiz('easy')">
+      <span class="diff-icon">🌱</span>
+      <span class="diff-label">Easy</span>
+      <span class="diff-sub">Casual fun</span>
+    </button>
+    <button class="diff-btn diff-medium" onclick="startQuiz('medium')">
+      <span class="diff-icon">🔥</span>
+      <span class="diff-label">Medium</span>
+      <span class="diff-sub">Test yourself</span>
+    </button>
+    <button class="diff-btn diff-hard" onclick="startQuiz('hard')">
+      <span class="diff-icon">💀</span>
+      <span class="diff-label">Hard</span>
+      <span class="diff-sub">For experts only</span>
+    </button>
+  </div>
+  <button class="modal-close" onclick="closeModal()">✕ Cancel</button>
+</div>
+
+<style>
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+  .modal {
+    position: fixed;
+    bottom: -100%;
+    left: 50%; transform: translateX(-50%);
+    width: min(480px, 95vw);
+    background: #13131a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px 24px 0 0;
+    padding: 2rem;
+    z-index: 101;
+    transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .modal.show { bottom: 0; }
+
+  @media (min-width: 600px) {
+    .modal {
+      bottom: auto;
+      top: 50%; transform: translate(-50%, -50%) scale(0.9);
+      border-radius: 24px;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal.show { top: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+
+  .modal-topic-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .modal-emoji { font-size: 2.5rem; }
+  .modal-topic-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; }
+  .modal-topic-desc { color: #888; font-size: 0.82rem; margin-top: 0.2rem; }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .diff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+
+  .diff-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 1.2rem 0.75rem;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .diff-btn:hover { transform: translateY(-4px) scale(1.05); }
+  .diff-icon { font-size: 1.8rem; }
+  .diff-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: #f0f0f5; }
+  .diff-sub { font-size: 0.7rem; color: #888; }
+
+  .diff-easy:hover { background: rgba(52,211,153,0.1); border-color: #34D399; }
+  .diff-easy .diff-label { color: #34D399; }
+  .diff-medium:hover { background: rgba(251,191,36,0.1); border-color: #FBBF24; }
+  .diff-medium .diff-label { color: #FBBF24; }
+  .diff-hard:hover { background: rgba(239,68,68,0.1); border-color: #EF4444; }
+  .diff-hard .diff-label { color: #EF4444; }
+
+  .modal-close {
+    width: 100%; padding: 0.75rem;
+    background: transparent; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; color: #888; font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .modal-close:hover { border-color: rgba(255,255,255,0.2); color: #f0f0f5; }
+</style>
+
 <script src="data.js"></script>
 <script>
-  // Custom cursor
   const cursor = document.getElementById('cursor');
   const follower = document.getElementById('follower');
   let mx = 0, my = 0, fx = 0, fy = 0;
@@ -494,28 +612,40 @@
   }
   animateFollower();
 
-  document.querySelectorAll('a, button').forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      cursor.style.transform = 'scale(2)';
-      follower.style.transform = 'scale(1.5)';
-    });
-    el.addEventListener('mouseleave', () => {
-      cursor.style.transform = 'scale(1)';
-      follower.style.transform = 'scale(1)';
-    });
-  });
+  let selectedTopic = null;
 
-  // Render topic cards
+  function openModal(key) {
+    const topic = quizData[key];
+    selectedTopic = key;
+    document.getElementById('modalEmoji').textContent = topic.emoji;
+    document.getElementById('modalTopicName').textContent = topic.name;
+    document.getElementById('modalTopicDesc').textContent = topic.description;
+    document.getElementById('modalTopicHeader').style.background = topic.color + '11';
+    document.getElementById('modalOverlay').classList.add('show');
+    document.getElementById('diffModal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+    document.getElementById('diffModal').classList.remove('show');
+    selectedTopic = null;
+  }
+
+  function startQuiz(difficulty) {
+    sessionStorage.setItem('selectedTopic', selectedTopic);
+    sessionStorage.setItem('difficulty', difficulty);
+    window.location.href = 'quiz.html';
+  }
+
   const grid = document.getElementById('topicsGrid');
-  topics.forEach(topic => {
-    const card = document.createElement('a');
-    card.href = `quiz.html?topic=${topic.id}`;
+  Object.entries(quizData).forEach(([key, topic]) => {
+    const card = document.createElement('div');
     card.className = 'topic-card';
     card.style.setProperty('--card-color', topic.color);
     card.style.setProperty('--card-glow', topic.color + '33');
     card.innerHTML = `
       <div class="card-shine"></div>
-      <div style="position:absolute;inset:0;background:${topic.gradient};opacity:0.04;border-radius:20px;pointer-events:none;"></div>
+      <div style="position:absolute;inset:0;background:${topic.bg};opacity:0.04;border-radius:20px;pointer-events:none;"></div>
       <div class="topic-header">
         <span class="topic-emoji">${topic.emoji}</span>
         <span class="topic-arrow">↗</span>
@@ -525,7 +655,7 @@
       <div class="topic-footer">
         <div class="topic-pills">
           <span class="pill">15 Qs</span>
-          <span class="pill pill-accent">30s</span>
+          <span class="pill pill-accent">3 levels</span>
         </div>
         <div class="topic-progress-ring">
           <svg width="36" height="36" viewBox="0 0 36 36">
@@ -535,18 +665,15 @@
         </div>
       </div>
     `;
-    grid.appendChild(card);
-
-    // 3D tilt effect
+    card.addEventListener('click', () => openModal(key));
     card.addEventListener('mousemove', e => {
       const rect = card.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
       card.style.transform = `translateY(-8px) scale(1.02) rotateX(${-y * 8}deg) rotateY(${x * 8}deg)`;
     });
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
-    });
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    grid.appendChild(card);
   });
 </script>
 </body>
