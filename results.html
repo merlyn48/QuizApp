@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizVibe — Results</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #1a1a24;
+      --text: #f0eeff;
+      --muted: #7b7a8e;
+      --border: rgba(255,255,255,0.07);
+      --accent: #c44dff;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+    .cursor {
+      width: 12px; height: 12px; background: #fff;
+      border-radius: 50%; position: fixed;
+      pointer-events: none; z-index: 9999;
+      mix-blend-mode: difference; transition: transform 0.1s;
+    }
+    .cursor-follower {
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 50%; position: fixed;
+      pointer-events: none; z-index: 9998;
+      transition: all 0.12s ease; mix-blend-mode: difference;
+    }
+    .bg-grid {
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px; z-index: 0;
+    }
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(90px); opacity: 0.12;
+      z-index: 0; pointer-events: none;
+      animation: float 12s ease-in-out infinite;
+    }
+    .orb-1 { width: 500px; height: 500px; background: var(--result-color, #c44dff); top: -150px; left: 50%; transform: translateX(-50%); }
+    .orb-2 { width: 300px; height: 300px; background: #4361ee; bottom: 0; right: 0; animation-delay: -5s; }
+    @keyframes float {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(0,-20px); }
+    }
+    .container {
+      max-width: 680px; margin: 0 auto;
+      padding: 0 2rem; position: relative; z-index: 1;
+    }
+
+    /* Top nav */
+    .topbar {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1.2rem;
+      background: linear-gradient(135deg, #fff, #c44dff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    /* Hero result */
+    .result-hero {
+      text-align: center;
+      padding: 1rem 0 2.5rem;
+      animation: fadeDown 0.6s ease both;
+    }
+    .result-emoji {
+      font-size: 4rem;
+      display: block;
+      margin-bottom: 1rem;
+      animation: emojiPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+    }
+    @keyframes emojiPop {
+      from { opacity: 0; transform: scale(0.3); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .result-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 0.8rem;
+    }
+    .result-subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Score card */
+    .score-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease 0.3s both;
+    }
+    .score-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--result-color, var(--accent));
+    }
+    .score-ring-wrap {
+      position: relative;
+      width: 140px; height: 140px;
+      margin: 0 auto 1.5rem;
+    }
+    .score-ring-wrap svg { transform: rotate(-90deg); }
+    .ring-bg-s { stroke: var(--bg3); }
+    .ring-fill-s {
+      stroke: var(--result-color, var(--accent));
+      stroke-dasharray: 345;
+      stroke-dashoffset: 345;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
+    }
+    .score-inner {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .score-big {
+      font-family: 'Syne', sans-serif;
+      font-size: 3rem; font-weight: 800;
+      color: var(--result-color, var(--accent));
+      line-height: 1;
+    }
+    .score-out-of {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .score-percent {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .score-breakdown {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .breakdown-item { text-align: center; }
+    .breakdown-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem; font-weight: 700;
+    }
+    .breakdown-num.correct { color: #6bcb77; }
+    .breakdown-num.wrong { color: #ff6b6b; }
+    .breakdown-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Message card */
+    .message-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.5s ease 0.4s both;
+      position: relative;
+      overflow: hidden;
+    }
+    .message-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--result-color, var(--accent));
+      opacity: 0.03;
+    }
+    .message-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--result-color, var(--accent));
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+    }
+    .message-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #fff;
+    }
+
+    /* Recommendations */
+    .rec-section {
+      animation: fadeUp 0.5s ease 0.5s both;
+    }
+    .rec-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .rec-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+    .rec-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.2rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: none;
+      display: block;
+    }
+    .rec-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--rc-color, var(--accent));
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    }
+    .rec-emoji { font-size: 1.6rem; display: block; margin-bottom: 0.5rem; }
+    .rec-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem; font-weight: 700;
+    }
+    .rec-desc { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* Actions */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-bottom: 3rem;
+      animation: fadeUp 0.5s ease 0.6s both;
+    }
+    .btn-primary {
+      padding: 1rem; background: var(--result-color, var(--accent));
+      color: #000; border: none; border-radius: 14px;
+      font-family: 'Syne', sans-serif; font-size: 0.95rem;
+      font-weight: 700; cursor: none;
+      transition: all 0.2s ease; text-decoration: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-secondary {
+      padding: 1rem; background: var(--bg2);
+      color: var(--text); border: 1px solid var(--border);
+      border-radius: 14px; font-family: 'Syne', sans-serif;
+      font-size: 0.95rem; font-weight: 600; cursor: none;
+      transition: all 0.2s ease; text-decoration: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Confetti */
+    .confetti-piece {
+      position: fixed; pointer-events: none; z-index: 200;
+      animation: confettiFall linear forwards;
+      border-radius: 2px;
+    }
+    @keyframes confettiFall {
+      0% { opacity: 1; transform: translateY(-10px) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="follower"></div>
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+  <div class="topbar">
+    <div class="logo">QuizVibe✦</div>
+    <a href="index.html" style="color:var(--muted);font-size:0.85rem;text-decoration:none;cursor:none;">← All topics</a>
+  </div>
+
+  <div class="result-hero">
+    <span class="result-emoji" id="resultEmoji"></span>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-subtitle" id="resultSubtitle"></div>
+  </div>
+
+  <div class="score-card">
+    <div class="score-ring-wrap">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle class="ring-bg-s" cx="70" cy="70" r="55" fill="none" stroke-width="6"/>
+        <circle class="ring-fill-s" id="scoreRing" cx="70" cy="70" r="55" fill="none" stroke-width="6"/>
+      </svg>
+      <div class="score-inner">
+        <div class="score-big" id="scoreBig">0</div>
+        <div class="score-out-of">out of 15</div>
+      </div>
+    </div>
+    <div class="score-percent" id="scorePercent"></div>
+    <div class="score-breakdown">
+      <div class="breakdown-item">
+        <div class="breakdown-num correct" id="correctCount">0</div>
+        <div class="breakdown-label">Correct</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-num wrong" id="wrongCount">0</div>
+        <div class="breakdown-label">Wrong</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-num" id="timeBonus" style="color:var(--result-color)">—</div>
+        <div class="breakdown-label">Grade</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="message-card">
+    <div class="message-label">Your verdict</div>
+    <div class="message-text" id="messageText"></div>
+  </div>
+
+  <div class="rec-section">
+    <div class="rec-heading">Try these next</div>
+    <div class="rec-grid" id="recGrid"></div>
+  </div>
+
+  <div class="actions">
+    <a id="retryBtn" href="#" class="btn-primary">↺ Retry this topic</a>
+    <a href="index.html" class="btn-secondary">⊞ All topics</a>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const follower = document.getElementById('follower');
+  let mx=0,my=0,fx=0,fy=0;
+  document.addEventListener('mousemove',e=>{
+    mx=e.clientX;my=e.clientY;
+    cursor.style.left=mx-6+'px';cursor.style.top=my-6+'px';
+  });
+  function af(){fx+=(mx-fx)*0.15;fy+=(my-fy)*0.15;
+    follower.style.left=fx-18+'px';follower.style.top=fy-18+'px';
+    requestAnimationFrame(af);}
+  af();
+
+  // Data
+  const score = parseInt(sessionStorage.getItem('quizScore') || 0);
+  const topicId = sessionStorage.getItem('quizTopic') || 'kpop';
+  const total = parseInt(sessionStorage.getItem('quizTotal') || 15);
+  const topic = topics.find(t => t.id === topicId) || topics[0];
+  const pct = Math.round((score / total) * 100);
+
+  // Set color
+  document.documentElement.style.setProperty('--result-color', topic.color);
+  document.querySelector('.orb-1').style.background = topic.color;
+
+  // Result tiers
+  const tiers = [
+    { min: 14, emoji: '🏆', title: 'Absolute Legend', subtitle: `You basically wrote the book on ${topic.name}.`, message: 'Flawless. Untouchable. You didn\'t just pass — you dominated. There\'s nothing left to prove here. Go touch grass.', grade: 'S+' },
+    { min: 12, emoji: '🔥', title: 'On Fire!', subtitle: `${topic.name} has nothing on you.`, message: 'Nearly perfect. You clearly eat, sleep, and breathe this stuff. One or two slips but nothing that takes away from how impressive that was.', grade: 'A+' },
+    { min: 10, emoji: '✨', title: 'Pretty Impressive', subtitle: `Solid ${topic.name} knowledge right there.`, message: 'You know your stuff! A few tricky ones caught you out but overall you\'re clearly well-versed. A little more studying and you\'re unstoppable.', grade: 'A' },
+    { min: 8, emoji: '👍', title: 'Not Bad At All', subtitle: 'More than halfway there — respect.', message: 'A decent performance! You\'ve got a good foundation. A few more rounds and you\'ll be flying. Don\'t stop now.', grade: 'B' },
+    { min: 5, emoji: '📚', title: 'Room To Grow', subtitle: 'The knowledge is there... somewhere.', message: 'You\'re getting there! Some questions got the better of you today, but that just means there\'s exciting stuff to learn. Try again — you\'ve got this.', grade: 'C' },
+    { min: 0, emoji: '😅', title: 'Yikes...', subtitle: 'That was... a journey.', message: 'Okay so today wasn\'t your day — and that\'s completely fine! Now you know what to brush up on. Retry it and you\'ll be surprised how much sticks the second time.', grade: 'D' }
+  ];
+
+  const tier = tiers.find(t => score >= t.min);
+
+  document.getElementById('resultEmoji').textContent = tier.emoji;
+  document.getElementById('resultTitle').textContent = tier.title;
+  document.getElementById('resultSubtitle').textContent = tier.subtitle;
+  document.getElementById('messageText').textContent = tier.message;
+  document.getElementById('scoreBig').textContent = score;
+  document.getElementById('scorePercent').textContent = pct + '% accuracy';
+  document.getElementById('correctCount').textContent = score;
+  document.getElementById('wrongCount').textContent = total - score;
+  document.getElementById('timeBonus').textContent = tier.grade;
+  document.getElementById('retryBtn').href = `quiz.html?topic=${topicId}`;
+
+  // Animate score ring
+  setTimeout(() => {
+    const ring = document.getElementById('scoreRing');
+    const circumference = 345;
+    const offset = circumference - (pct / 100) * circumference;
+    ring.style.strokeDashoffset = offset;
+  }, 100);
+
+  // Animate score number
+  let displayed = 0;
+  const interval = setInterval(() => {
+    if (displayed < score) { displayed++; document.getElementById('scoreBig').textContent = displayed; }
+    else clearInterval(interval);
+  }, 80);
+
+  // Recommendations (3 topics that aren't current)
+  const others = topics.filter(t => t.id !== topicId);
+  const recs = others.sort(() => 0.5 - Math.random()).slice(0, 3);
+  const recGrid = document.getElementById('recGrid');
+  recs.forEach(t => {
+    const card = document.createElement('a');
+    card.href = `quiz.html?topic=${t.id}`;
+    card.className = 'rec-card';
+    card.style.setProperty('--rc-color', t.color);
+    card.innerHTML = `
+      <span class="rec-emoji">${t.emoji}</span>
+      <div class="rec-name">${t.name}</div>
+      <div class="rec-desc">${t.description}</div>
+    `;
+    recGrid.appendChild(card);
+  });
+
+  // Confetti for high scores
+  if (score >= 10) {
+    const colors = [topic.color, '#fff', '#ffd93d', '#6bcb77', '#4cc9f0'];
+    for (let i = 0; i < 60; i++) {
+      setTimeout(() => {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        const size = Math.random() * 8 + 4;
+        c.style.cssText = `
+          width:${size}px;height:${size * 0.4}px;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          left:${Math.random()*100}vw;top:-10px;
+          animation-duration:${Math.random()*2+1.5}s;
+          animation-delay:${Math.random()*0.5}s;
+        `;
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+      }, i * 30);
+    }
+  }
+</script>
+</body>
+</html>
